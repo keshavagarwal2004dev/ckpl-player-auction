@@ -8,9 +8,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { TeamCard } from "@/components/cards/TeamCard";
 import { useAuctionStore } from "@/stores/auctionStore";
 import { Sport, SPORT_CONFIG, CATEGORY_CONFIG } from "@/types/auction";
+import { useSupabaseData } from "@/hooks/useSupabaseData";
 import { Users, User, Coins, Trophy } from "lucide-react";
 
 export default function Teams() {
+  useSupabaseData();
   const [searchParams] = useSearchParams();
   const initialSport = (searchParams.get('sport') as Sport) || null;
   
@@ -98,7 +100,7 @@ export default function Teams() {
                       >
                         <div className="h-10 w-10 rounded-lg bg-secondary overflow-hidden flex-shrink-0">
                           {player.photoUrl ? (
-                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-cover" />
+                            <img src={player.photoUrl} alt={player.name} className="h-full w-full object-cover" loading="lazy" decoding="async" />
                           ) : (
                             <div className="flex h-full w-full items-center justify-center">
                               <User className="h-5 w-5 text-muted-foreground/30" />

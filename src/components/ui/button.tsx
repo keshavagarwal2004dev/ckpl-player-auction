@@ -9,17 +9,17 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/25",
+        default: "bg-gradient-to-r from-primary to-secondary text-white hover:from-primary/90 hover:to-secondary/90 shadow-lg shadow-primary/40 hover:shadow-primary/60 hover:-translate-y-0.5 active:translate-y-0",
         destructive: "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-lg shadow-destructive/25",
         success: "bg-success text-success-foreground hover:bg-success/90 shadow-lg shadow-success/25",
         warning: "bg-warning text-warning-foreground hover:bg-warning/90 shadow-lg shadow-warning/25",
-        outline: "border border-border bg-transparent hover:bg-accent hover:text-accent-foreground",
-        secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost: "hover:bg-accent hover:text-accent-foreground",
+        outline: "border border-white/20 bg-white/5 hover:bg-white/10 hover:border-white/30 text-foreground transition-colors",
+        secondary: "bg-secondary/80 text-secondary-foreground hover:bg-secondary shadow-lg shadow-secondary/25",
+        ghost: "hover:bg-white/10 text-foreground hover:text-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         bid: "bg-gradient-to-r from-warning to-amber-500 text-warning-foreground font-bold hover:from-amber-500 hover:to-warning shadow-lg shadow-warning/30 hover:shadow-warning/50 active:scale-95",
-        hero: "bg-gradient-to-r from-primary to-cyan-400 text-primary-foreground font-bold hover:from-cyan-400 hover:to-primary shadow-lg shadow-primary/40 hover:shadow-primary/60",
-        glow: "bg-primary text-primary-foreground animate-pulse-glow hover:bg-primary/90",
+        hero: "bg-gradient-to-r from-primary to-secondary text-white font-bold hover:shadow-lg hover:shadow-primary/50 shadow-lg shadow-primary/40 transition-all hover:-translate-y-1 active:translate-y-0",
+        glow: "bg-primary text-white animate-pulse shadow-lg shadow-primary/50",
       },
       size: {
         default: "h-10 px-4 py-2",

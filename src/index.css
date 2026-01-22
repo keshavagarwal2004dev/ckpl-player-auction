@@ -1,75 +1,80 @@
+/* CKPL Sports Auction Design System */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Sora:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* CKPL Sports Auction Design System */
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap');
-
 @layer base {
   :root {
-    /* Core palette - Dark sports theme */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    /* Modern gradient dark theme with better depth */
+    --background: 222 35% 12%;
+    --foreground: 0 0% 98%;
 
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222 30% 18%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 222 30% 18%;
+    --popover-foreground: 0 0% 98%;
 
-    /* Electric cyan primary */
-    --primary: 187 96% 42%;
-    --primary-foreground: 222 47% 6%;
+    /* Primary: Rich vibrant blue */
+    --primary: 210 98% 56%;
+    --primary-foreground: 0 0% 98%;
 
-    /* Secondary slate */
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
+    /* Secondary: Deep vibrant purple */
+    --secondary: 265 85% 58%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 55%;
+    --muted: 220 12% 48%;
+    --muted-foreground: 0 0% 76%;
 
-    --accent: 217 33% 20%;
-    --accent-foreground: 210 40% 98%;
+    /* Accent: Bright cyan */
+    --accent: 180 100% 50%;
+    --accent-foreground: 222 35% 12%;
 
     /* Status colors */
     --destructive: 0 84% 60%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 98%;
 
-    --success: 142 76% 36%;
-    --success-foreground: 210 40% 98%;
+    --success: 145 75% 40%;
+    --success-foreground: 0 0% 98%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 222 47% 6%;
+    --warning-foreground: 222 35% 12%;
 
-    --border: 217 33% 20%;
-    --input: 217 33% 17%;
-    --ring: 187 96% 42%;
+    --border: 222 30% 28%;
+    --input: 222 30% 28%;
+    --ring: 210 98% 56%;
 
-    --radius: 0.75rem;
+    --radius: 0.875rem;
 
-    /* Custom tokens */
-    --glow-primary: 0 0 20px hsl(187 96% 42% / 0.4);
-    --glow-success: 0 0 20px hsl(142 76% 36% / 0.4);
-    --glow-warning: 0 0 20px hsl(38 92% 50% / 0.4);
-    --gradient-dark: linear-gradient(180deg, hsl(222 47% 9%) 0%, hsl(222 47% 6%) 100%);
-    --gradient-card: linear-gradient(135deg, hsl(222 47% 11%) 0%, hsl(222 47% 8%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(187 96% 42% / 0.15) 0%, hsl(222 47% 6%) 50%);
-    --gradient-bid: linear-gradient(135deg, hsl(38 92% 50% / 0.2) 0%, hsl(222 47% 9%) 100%);
+    /* Modern glows and gradients */
+    --glow-primary: 0 0 40px hsl(210 98% 56% / 0.5);
+    --glow-secondary: 0 0 30px hsl(265 85% 58% / 0.4);
+    --glow-accent: 0 0 25px hsl(180 100% 50% / 0.35);
+    --glow-success: 0 0 25px hsl(145 75% 40% / 0.35);
+    
+    /* Premium gradients - improved backgrounds */
+    --gradient-dark: linear-gradient(135deg, hsl(222 35% 12%) 0%, hsl(222 40% 16%) 25%, hsl(265 35% 14%) 75%, hsl(222 35% 12%) 100%);
+    --gradient-card: linear-gradient(135deg, hsl(222 30% 22%) 0%, hsl(222 30% 18%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(210 98% 56% / 0.25) 0%, hsl(265 85% 58% / 0.15) 50%, hsl(180 100% 50% / 0.2) 100%);
+    --gradient-button: linear-gradient(135deg, hsl(210 98% 56%) 0%, hsl(265 85% 58%) 100%);
+    --gradient-button-hover: linear-gradient(135deg, hsl(210 100% 60%) 0%, hsl(265 90% 62%) 100%);
     
     /* Sidebar */
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 187 96% 42%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 217 33% 15%;
-    --sidebar-accent-foreground: 210 40% 98%;
-    --sidebar-border: 217 33% 18%;
-    --sidebar-ring: 187 96% 42%;
+    --sidebar-background: 222 35% 12%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 210 98% 56%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 265 85% 58%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 222 30% 26%;
+    --sidebar-ring: 210 98% 56%;
   }
 
   .dark {
-    --background: 222 47% 6%;
-    --foreground: 210 40% 98%;
+    --background: 222 35% 12%;
+    --foreground: 0 0% 98%;
   }
 }
 
@@ -79,17 +84,168 @@
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    @apply bg-gradient-to-br from-background via-[hsl(265,35%,14%)] to-background text-foreground antialiased;
+    font-family: 'Sora', sans-serif;
+    position: relative;
   }
 
-  h1, h2, h3, .display-font {
-    font-family: 'Bebas Neue', sans-serif;
-    letter-spacing: 0.05em;
+  body::before {
+    content: '';
+    @apply fixed inset-0 pointer-events-none;
+    background: 
+      radial-gradient(circle at 20% 50%, hsl(210 98% 56% / 0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, hsl(265 85% 58% / 0.08) 0%, transparent 50%);
+    z-index: 0;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Space Grotesk', sans-serif;
+    letter-spacing: -0.01em;
+    font-weight: 700;
+  }
+
+  code, pre {
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Better focus states */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
   }
 }
 
 @layer components {
+  /* Glow effects */
+  .glow-primary {
+    box-shadow: var(--glow-primary);
+  }
+
+  .glow-secondary {
+    box-shadow: var(--glow-secondary);
+  }
+
+  .glow-accent {
+    box-shadow: var(--glow-accent);
+  }
+
+  .glow-success {
+    box-shadow: var(--glow-success);
+  }
+
+  /* Premium card styling */
+  .card-premium {
+    @apply relative overflow-hidden rounded-xl border border-border/40 bg-card backdrop-blur-xl;
+    background: linear-gradient(135deg, hsl(222 30% 22%) 0%, hsl(222 30% 18%) 100%);
+    box-shadow: 0 8px 32px hsl(210 98% 56% / 0.1), 0 0 1px hsl(210 98% 56% / 0.2);
+  }
+
+  .card-premium::before {
+    @apply absolute inset-0 bg-gradient-to-br from-primary/8 to-secondary/8 pointer-events-none;
+    content: '';
+  }
+
+  /* Button enhancements */
+  .btn-primary {
+    @apply relative overflow-hidden font-semibold transition-all duration-300;
+    background: linear-gradient(135deg, hsl(210 98% 56%), hsl(265 85% 58%));
+    box-shadow: 0 8px 24px hsl(210 98% 56% / 0.4), 0 0 1px hsl(210 98% 56% / 0.5);
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, hsl(210 100% 60%), hsl(265 90% 62%));
+    box-shadow: 0 12px 32px hsl(210 98% 56% / 0.5), 0 0 2px hsl(210 98% 56% / 0.6);
+    @apply -translate-y-1;
+  }
+
+  .btn-primary:active {
+    @apply translate-y-0;
+  }
+
+  /* Shimmer effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+
+  .shimmer {
+    animation: shimmer 3s infinite;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(217 98% 61% / 0.1),
+      transparent
+    );
+    background-size: 1000px 100%;
+  }
+
+  /* Smooth transitions */
+  .smooth-transition {
+    transition: all 300ms ease-out;
+  }
+
+  /* Badge variations */
+  .badge-live {
+    @apply bg-destructive/20 text-destructive border-destructive/30;
+    box-shadow: var(--glow-accent);
+  }
+
+  .badge-success {
+    @apply bg-success/20 text-success border-success/30;
+    box-shadow: var(--glow-success);
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+
+  /* Hero background effect */
+  .hero-bg {
+    @apply relative overflow-hidden;
+  }
+
+  .hero-bg::before {
+    @apply absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-secondary/5 pointer-events-none;
+    content: '';
+  }
+
+  .hero-bg::after {
+    @apply absolute top-0 right-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl pointer-events-none;
+    content: '';
+  }
+
+  /* Smooth button hover */
+  .btn-smooth {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .btn-smooth:hover {
+    @apply -translate-y-1;
+  }
+
+  .btn-smooth:active {
+    @apply translate-y-0;
+  }
+
+  /* Glass effect */
+  .glass {
+    @apply bg-white/5 backdrop-blur-md border border-white/10;
+  }
+
+  /* Hover lift effect */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl;
+  }
+
   .card-glow {
     box-shadow: var(--glow-primary);
   }
@@ -161,11 +317,11 @@
 
 @layer utilities {
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-cyan-400;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-amber-400;
   }
 
   .border-glow {
     @apply border border-primary/50;
-    box-shadow: inset 0 0 10px hsl(187 96% 42% / 0.1);
+    box-shadow: inset 0 0 10px hsl(47 98% 55% / 0.15);
   }
 }
