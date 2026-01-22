@@ -50,10 +50,6 @@ export default function Admin() {
       toast.error('Player name is required');
       return;
     }
-    if (!photoFile && !newPlayer.photoUrl.trim()) {
-      toast.error('Player photo is required');
-      return;
-    }
 
     try {
       let photoUrl = newPlayer.photoUrl;
