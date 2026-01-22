@@ -77,7 +77,7 @@ export default function PublicView() {
     {
       icon: Zap,
       label: 'Available',
-      value: players.filter(p => p.status === 'available').length,
+      value: players.filter(p => p.status === 'available' || p.status === 'unsold').length,
       color: 'text-yellow-500',
       bg: 'bg-yellow-100'
     }

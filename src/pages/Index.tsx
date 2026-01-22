@@ -103,7 +103,7 @@ const Index = () => {
           </div>
           <div className="rounded-lg sm:rounded-xl border border-border/50 bg-card p-3 sm:p-4">
             <div className="text-muted-foreground text-xs sm:text-sm mb-1.5 sm:mb-2">Available</div>
-            <p className="font-display text-3xl text-primary">{totalPlayers - totalAuctioned}</p>
+            <p className="font-display text-3xl text-primary">{players.filter(p => p.status === 'available' || p.status === 'unsold').length}</p>
           </div>
         </section>
 
