@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Layout } from '@/components/layout/Layout';
 import { loginWithEmail } from '@/lib/authApi';
 import { toast } from 'sonner';
-import { LogIn } from 'lucide-react';
+import { LogIn, X } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -49,7 +49,17 @@ export default function Login() {
   return (
     <Layout>
       <div className="min-h-[calc(100vh-200px)] flex items-center justify-center px-4">
-        <Card className="w-full max-w-md bg-card border-border p-8">
+        <Card className="w-full max-w-md bg-card border-border p-8 relative">
+          {/* Close Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/view')}
+            className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+
           <div className="text-center mb-8">
             <div className="flex justify-center mb-4">
               <div className="bg-primary/20 p-4 rounded-lg">
