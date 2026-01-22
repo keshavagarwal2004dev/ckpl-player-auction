@@ -54,7 +54,7 @@ export default function Login() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => navigate('/view')}
+            onClick={() => navigate('/')}
             className="absolute top-4 right-4 h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
           >
             <X className="h-4 w-4" />
