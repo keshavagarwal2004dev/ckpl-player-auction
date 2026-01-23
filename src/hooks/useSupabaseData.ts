@@ -68,7 +68,7 @@ export function useRealtimeAuctionState() {
 
       return result
     },
-    refetchInterval: (data) => (data?.isActive ? 1500 : false),
+    refetchInterval: (data) => (data?.isActive ? 500 : false),
     refetchIntervalInBackground: true, // Continue polling even when tab is not focused
     staleTime: 0, // Always consider data stale to trigger immediate refetch
   })
