@@ -12,11 +12,15 @@ export function useSupabaseData() {
   const playersQuery = useQuery<Player[]>({
     queryKey: ['players'],
     queryFn: fetchPlayersForStore,
+    staleTime: 2000, // Keep data fresh for 2 seconds
+    gcTime: 10000, // Cache for 10 seconds
   })
 
   const teamsQuery = useQuery<Team[]>({
     queryKey: ['teams'],
     queryFn: fetchTeamsForStore,
+    staleTime: 5000, // Teams change less frequently
+    gcTime: 15000,
   })
 
   // Use effect to sync query data to store whenever it changes
@@ -68,9 +72,9 @@ export function useRealtimeAuctionState() {
 
       return result
     },
-    refetchInterval: (data) => (data?.isActive ? 500 : false),
-    refetchIntervalInBackground: true, // Continue polling even when tab is not focused
-    staleTime: 0, // Always consider data stale to trigger immediate refetch
+    refetchInterval: (data) => (data?.isActive ? 500 : 5000), // Poll slower when not active
+    refetchIntervalInBackground: false, // Don't poll in background when not active
+    staleTime: 500, // Data stale after 500ms during active auction
   })
 
   // Sync fetched auction state to Zustand store
@@ -137,8 +141,8 @@ export function useSupabaseMutations() {
       markPlayerSold(payload.playerId, payload.teamId, payload.amount),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
-      queryClient.invalidateQueries({ queryKey: ['auctionState-realtime'] })
+      queryClient.refetchQueries({ queryKey: ['teams'], type: 'inactive' })
+      queryClient.refetchQueries({ queryKey: ['auctionState-realtime'], type: 'active' })
     },
   })
 
@@ -146,7 +150,6 @@ export function useSupabaseMutations() {
     mutationFn: (playerId: string) => markPlayerUnsold(playerId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] })
-      queryClient.invalidateQueries({ queryKey: ['teams'] })
     },
   })
 
