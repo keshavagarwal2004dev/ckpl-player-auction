@@ -3,7 +3,7 @@ import { createPlayer, updatePlayer, createTeam, deletePlayerById, deleteTeamByI
 import { useAuctionStore } from '@/stores/auctionStore'
 import { PlayerCategory, Sport, Player, Team } from '@/types/auction'
 import { toast } from 'sonner'
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 
 export function useSupabaseData() {
   const setPlayers = useAuctionStore((s) => s.setPlayers)
@@ -45,38 +45,55 @@ export function useSupabaseData() {
 export function useRealtimeAuctionState() {
   const auctionStore = useAuctionStore()
 
-  // Real-time polling of auction state every 500ms
+  type AuctionStateSnapshot = Awaited<ReturnType<typeof fetchAuctionState>>
+  const lastUpdatedAtRef = useRef<string | null>(null)
+  const lastSnapshotRef = useRef<AuctionStateSnapshot | null>(null)
+
+  // Real-time polling of auction state (throttled + conditional)
   // This works across profiles/devices by fetching from the database
   const auctionStateQuery = useQuery({
     queryKey: ['auctionState-realtime'],
-    queryFn: fetchAuctionState,
-    refetchInterval: 500, // Poll every 500ms
+    queryFn: async () => {
+      const result = await fetchAuctionState({ since: lastUpdatedAtRef.current ?? undefined })
+
+      // If nothing changed, keep returning the last snapshot to avoid extra rerenders
+      if (!result.changed && lastSnapshotRef.current) {
+        return lastSnapshotRef.current
+      }
+
+      if (result.changed) {
+        lastUpdatedAtRef.current = result.updatedAt
+        lastSnapshotRef.current = result
+      }
+
+      return result
+    },
+    refetchInterval: (data) => (data?.isActive ? 1500 : false),
     refetchIntervalInBackground: true, // Continue polling even when tab is not focused
     staleTime: 0, // Always consider data stale to trigger immediate refetch
   })
 
   // Sync fetched auction state to Zustand store
   useEffect(() => {
-    if (auctionStateQuery.data !== undefined) {
-      const { currentPlayer, currentBid, currentBidderId, currentBidderName, bids } = auctionStateQuery.data
+    if (!auctionStateQuery.data?.changed) return
 
-      // Only update store if data actually changed to avoid unnecessary re-renders
-      const currentState = auctionStore.auctionState
-      if (
-        currentState.currentPlayer?.id !== currentPlayer?.id ||
-        currentState.currentBid !== currentBid ||
-        currentState.currentBidderId !== currentBidderId ||
-        currentState.bids.length !== bids.length
-      ) {
+    const { currentPlayer, currentBid, currentBidderId, currentBidderName, bids } = auctionStateQuery.data
 
-        auctionStore.updateAuctionStateFromDatabase({
-          currentPlayer,
-          currentBid,
-          currentBidderId,
-          currentBidderName,
-          bids,
-        })
-      }
+    // Only update store if data actually changed to avoid unnecessary re-renders
+    const currentState = auctionStore.auctionState
+    if (
+      currentState.currentPlayer?.id !== currentPlayer?.id ||
+      currentState.currentBid !== currentBid ||
+      currentState.currentBidderId !== currentBidderId ||
+      currentState.bids.length !== bids.length
+    ) {
+      auctionStore.updateAuctionStateFromDatabase({
+        currentPlayer,
+        currentBid,
+        currentBidderId,
+        currentBidderName,
+        bids,
+      })
     }
   }, [auctionStateQuery.data, auctionStore])
 
@@ -121,6 +138,7 @@ export function useSupabaseMutations() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['players'] })
       queryClient.invalidateQueries({ queryKey: ['teams'] })
+      queryClient.invalidateQueries({ queryKey: ['auctionState-realtime'] })
     },
   })
 

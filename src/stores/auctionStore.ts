@@ -284,12 +284,14 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
   },
 
   soldPlayer: (teamId, amount) => {
-    const { auctionState, teams, players } = get();
+    const { auctionState } = get();
     const player = auctionState.currentPlayer;
+    const bidderId = auctionState.currentBidderId;
+    const finalBid = auctionState.currentBid;
     
     if (!player) return;
 
-    // Update player status
+    // Update player status and local store
     set((state) => ({
       players: state.players.map((p) =>
         p.id === player.id
@@ -319,16 +321,13 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
     }));
     persistAuctionState(defaultAuctionState);
     
-    // Sync to database in the background
-    if (typeof window !== 'undefined') {
-      const currentState = get().auctionState
-      if (currentState.currentPlayer && currentState.currentBidderId) {
-        import('@/lib/auctionApi').then(({ endAuctionInDatabase }) => {
-          endAuctionInDatabase(currentState.currentPlayer!.id, currentState.currentBidderId!, currentState.currentBid).catch(err => {
-            console.error('Failed to sync auction end to database:', err)
-          })
+    // Sync auction close to database using captured values before reset
+    if (typeof window !== 'undefined' && player && bidderId) {
+      import('@/lib/auctionApi').then(({ endAuctionInDatabase }) => {
+        endAuctionInDatabase(player.id, bidderId, finalBid).catch(err => {
+          console.error('Failed to sync auction end to database:', err)
         })
-      }
+      })
     }
   },
 

@@ -196,6 +196,7 @@ export async function markPlayerSold(playerId: string, teamId: string, amount: n
     .update({
       status: 'closed',
       ended_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq('player_id', numericPlayerId)
     .eq('status', 'active')
@@ -388,60 +389,80 @@ export async function resetAuctionData(sport?: Sport) {
     )
   }
 }
-export async function fetchAuctionState(): Promise<Pick<AuctionState, 'currentPlayer' | 'currentBid' | 'currentBidderId' | 'currentBidderName' | 'bids'>> {
-  try {
-    console.log('🔵 [fetchAuctionState] POLLING: Fetching latest auction state from Supabase...')
+export type AuctionStateSnapshot = {
+  currentPlayer: Player | null
+  currentBid: number
+  currentBidderId: string | null
+  currentBidderName: string | null
+  bids: Bid[]
+  updatedAt: string | null
+  isActive: boolean
+  changed: boolean
+}
 
-    // Step 1: Fetch the most recent active auction (basic fields only)
+const emptyAuctionSnapshot: AuctionStateSnapshot = {
+  currentPlayer: null,
+  currentBid: 0,
+  currentBidderId: null,
+  currentBidderName: null,
+  bids: [],
+  updatedAt: null,
+  isActive: false,
+  changed: true,
+}
+
+export async function fetchAuctionState(options?: { since?: string }): Promise<AuctionStateSnapshot> {
+  try {
+    const since = options?.since
+    console.log('🔵 [fetchAuctionState] POLLING: Fetching latest auction state from Supabase', since ? `(since ${since})` : '')
+
+    // Step 1: Fetch the most recent active auction (only lightweight fields)
     const { data: auctionData, error: auctionError } = await supabase
       .from('auctions')
       .select('id, player_id, current_bid, highest_bidder_team_id, status, updated_at')
       .eq('status', 'active')
       .order('updated_at', { ascending: false })
       .limit(1)
-      .single()
-
-    if (auctionError?.code === 'PGRST116') {
-      console.log('🟡 [fetchAuctionState] No active auction found in database')
-      return {
-        currentPlayer: null,
-        currentBid: 0,
-        currentBidderId: null,
-        currentBidderName: null,
-        bids: [],
-      }
-    }
+      .maybeSingle()
 
     if (auctionError) {
+      if (auctionError.code === 'PGRST116') {
+        console.log('🟡 [fetchAuctionState] No active auction found in database')
+        return { ...emptyAuctionSnapshot }
+      }
+
       console.error('🔴 [fetchAuctionState] SUPABASE ERROR (Code: ' + auctionError.code + '):', {
         message: auctionError.message,
         details: auctionError.details,
         hint: auctionError.hint,
-        fullError: auctionError
+        fullError: auctionError,
       })
-      
-      // If it's a 406 error, it might be RLS policy issue
+
       if (auctionError.message?.includes('406') || auctionError.code === '406') {
         console.error('🔴 [fetchAuctionState] HTTP 406 Error - Likely RLS Policy Issue. Check Supabase dashboard > Authentication > Policies')
       }
-      
-      return {
-        currentPlayer: null,
-        currentBid: 0,
-        currentBidderId: null,
-        currentBidderName: null,
-        bids: [],
-      }
+
+      return { ...emptyAuctionSnapshot }
     }
 
     if (!auctionData) {
       console.log('🟡 [fetchAuctionState] Auction query returned no data')
+      return { ...emptyAuctionSnapshot }
+    }
+
+    const updatedAt = auctionData.updated_at ? new Date(auctionData.updated_at).toISOString() : null
+    const isActive = auctionData.status === 'active'
+    const hasChanges = !since || !updatedAt || updatedAt > since
+
+    // If nothing changed since last poll, return minimal payload to skip downstream work
+    if (!hasChanges) {
       return {
-        currentPlayer: null,
-        currentBid: 0,
-        currentBidderId: null,
-        currentBidderName: null,
-        bids: [],
+        ...emptyAuctionSnapshot,
+        currentBid: auctionData.current_bid || 0,
+        currentBidderId: auctionData.highest_bidder_team_id ? String(auctionData.highest_bidder_team_id) : null,
+        updatedAt,
+        isActive,
+        changed: false,
       }
     }
 
@@ -451,105 +472,75 @@ export async function fetchAuctionState(): Promise<Pick<AuctionState, 'currentPl
       currentBid: auctionData.current_bid,
       highestBidderId: auctionData.highest_bidder_team_id,
       status: auctionData.status,
-      updatedAt: auctionData.updated_at
+      updatedAt: auctionData.updated_at,
     })
 
-    // Step 2: Fetch player details with sport and category
+    // Step 2: Fetch player details with sport and category in a single request
     let currentPlayer: Player | null = null
     if (auctionData.player_id) {
       const { data: playerData } = await supabase
         .from('players')
-        .select('id, name, photo_url, sport_id, category_id')
+        .select('id, name, photo_url, sport:sports(name), category:categories(name)')
         .eq('id', auctionData.player_id)
         .single()
 
       if (playerData) {
-        console.log('🟢 [fetchAuctionState] Fetched player from DB:', playerData.name)
-        
-        // Get sport name
-        const { data: sportData } = await supabase
-          .from('sports')
-          .select('name')
-          .eq('id', playerData.sport_id)
-          .single()
-
-        // Get category name
-        const { data: categoryData } = await supabase
-          .from('categories')
-          .select('name')
-          .eq('id', playerData.category_id)
-          .single()
+        const sportName = mapSportName(playerData.sport?.name || '') || 'basketball'
+        const categoryName = mapCategoryName(playerData.category?.name || '') || 'others'
 
         currentPlayer = {
           id: String(playerData.id),
           name: playerData.name,
           photoUrl: playerData.photo_url || '',
-          sport: mapSportName(sportData?.name || '') || 'basketball',
-          category: mapCategoryName(categoryData?.name || '') || 'others',
+          sport: sportName,
+          category: categoryName,
           status: 'available',
           createdAt: new Date().toISOString(),
         }
-
-        console.log('🟢 [fetchAuctionState] Player object created:', currentPlayer.name)
       }
     }
 
-    // Step 3: Fetch bids for this auction
+    // Step 3: Fetch bids with team names in a single query
     const { data: bidsArray } = await supabase
       .from('bids')
-      .select('id, team_id, bid_amount')
+      .select('id, team_id, bid_amount, created_at, team:teams(name)')
       .eq('auction_id', auctionData.id)
       .order('created_at', { ascending: true })
 
-    console.log('🟢 [fetchAuctionState] Fetched bids from DB:', bidsArray?.length || 0, 'bids')
-
-    // Step 4: Get team names for each bid
-    const bidsData: typeof bidsArray = []
-    if (Array.isArray(bidsArray)) {
-      for (const bid of bidsArray) {
-        const { data: teamData } = await supabase
-          .from('teams')
-          .select('name')
-          .eq('id', bid.team_id)
-          .single()
-
-        bidsData.push({
-          ...bid,
-          _teamName: teamData?.name || 'Unknown Team',
-        } as any)
-      }
-    }
-
-    const formattedBids = bidsData.map((bid: any) => ({
+    const formattedBids = (bidsArray || []).map((bid: any) => ({
       id: String(bid.id),
       playerId: currentPlayer?.id || '',
       teamId: String(bid.team_id),
-      teamName: bid._teamName || 'Unknown Team',
+      teamName: bid.team?.name || 'Unknown Team',
       amount: bid.bid_amount,
-      timestamp: new Date().toISOString(),
+      timestamp: bid.created_at || new Date().toISOString(),
     }))
 
-    console.log('🟢 [fetchAuctionState] Formatted bids:', formattedBids.length)
-
-    // Step 5: Get highest bidder team name
+    // Step 4: Highest bidder team name (reuse bids data when possible)
     let bidderName: string | null = null
     if (auctionData.highest_bidder_team_id) {
-      const { data: bidderTeamData } = await supabase
-        .from('teams')
-        .select('name')
-        .eq('id', auctionData.highest_bidder_team_id)
-        .single()
+      bidderName = formattedBids.find((bid) => bid.teamId === String(auctionData.highest_bidder_team_id))?.teamName || null
 
-      bidderName = bidderTeamData?.name || null
-      console.log('🟢 [fetchAuctionState] Highest bidder team:', bidderName)
+      if (!bidderName) {
+        const { data: bidderTeamData } = await supabase
+          .from('teams')
+          .select('name')
+          .eq('id', auctionData.highest_bidder_team_id)
+          .single()
+
+        bidderName = bidderTeamData?.name || null
+      }
     }
 
-    const result = {
+    const result: AuctionStateSnapshot = {
       currentPlayer,
       currentBid: auctionData.current_bid || 0,
       currentBidderId: auctionData.highest_bidder_team_id ? String(auctionData.highest_bidder_team_id) : null,
       currentBidderName: bidderName,
       bids: formattedBids,
+      updatedAt,
+      isActive,
+      changed: true,
     }
 
     console.log('🟢 [fetchAuctionState] SUCCESS - Returning auction state:', {
@@ -557,18 +548,13 @@ export async function fetchAuctionState(): Promise<Pick<AuctionState, 'currentPl
       currentBid: auctionData.current_bid,
       bidderName,
       bidsCount: formattedBids.length,
+      updatedAt,
     })
 
     return result
   } catch (error) {
     console.error('🔴 [fetchAuctionState] Unexpected error:', error)
-    return {
-      currentPlayer: null,
-      currentBid: 0,
-      currentBidderId: null,
-      currentBidderName: null,
-      bids: [],
-    }
+    return { ...emptyAuctionSnapshot }
   }
 }
 
