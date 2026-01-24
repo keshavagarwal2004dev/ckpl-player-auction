@@ -424,14 +424,13 @@ export async function fetchAuctionState(options?: { since?: string }): Promise<A
     const since = options?.since
     console.log('🔵 [fetchAuctionState] POLLING: Fetching latest auction state from Supabase', since ? `(since ${since})` : '')
 
-    // Step 1: Fetch the most recent active auction (only lightweight fields)
-    const { data: auctionData, error: auctionError } = await supabase
+    // Step 1: Fetch up to 2 active auctions to detect duplicates
+    const { data: auctionRows, error: auctionError } = await supabase
       .from('auctions')
       .select('id, player_id, current_bid, highest_bidder_team_id, status, updated_at')
       .eq('status', 'active')
       .order('updated_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
+      .limit(2)
 
     if (auctionError) {
       if (auctionError.code === 'PGRST116') {
@@ -453,10 +452,18 @@ export async function fetchAuctionState(options?: { since?: string }): Promise<A
       return { ...emptyAuctionSnapshot }
     }
 
-    if (!auctionData) {
+    if (!auctionRows || auctionRows.length === 0) {
       console.log('🟡 [fetchAuctionState] Auction query returned no data')
       return { ...emptyAuctionSnapshot }
     }
+
+    // Defensive guard: If multiple active auctions are present, return empty
+    if (auctionRows.length > 1) {
+      console.warn('🟠 [fetchAuctionState] Multiple active auctions detected - returning empty snapshot to avoid ghosting')
+      return { ...emptyAuctionSnapshot }
+    }
+
+    const auctionData = auctionRows[0]
 
     const updatedAt = auctionData.updated_at ? new Date(auctionData.updated_at).toISOString() : null
     const isActive = auctionData.status === 'active'
