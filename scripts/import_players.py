@@ -91,7 +91,10 @@ def chunked(iterable: List[dict], size: int):
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Bulk import players from CSV into Supabase.")
+    parser = argparse.ArgumentParser(
+        description="Bulk import players from CSV into Supabase.",
+        epilog="CSV columns expected: Name, Sport, Achievement (category), Position (optional)"
+    )
     parser.add_argument("csv_path", help="Path to the CSV file")
     parser.add_argument("--dry-run", action="store_true", help="Do not insert, just show counts")
     args = parser.parse_args()
