@@ -111,12 +111,12 @@ export function useSupabaseMutations() {
   const queryClient = useQueryClient()
 
   const addPlayerMutation = useMutation({
-    mutationFn: (payload: { name: string; sport: Sport; category: PlayerCategory; photoUrl: string }) => createPlayer(payload),
+    mutationFn: (payload: { name: string; sport: Sport; category: PlayerCategory; photoUrl: string; position?: string }) => createPlayer(payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['players'] }),
   })
 
   const editPlayerMutation = useMutation({
-    mutationFn: (payload: { id: string; name?: string; sport?: Sport; category?: PlayerCategory; photoUrl?: string }) =>
+    mutationFn: (payload: { id: string; name?: string; sport?: Sport; category?: PlayerCategory; photoUrl?: string; position?: string }) =>
       updatePlayer(payload.id, payload),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['players'] }),
   })

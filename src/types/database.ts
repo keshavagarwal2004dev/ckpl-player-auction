@@ -31,6 +31,7 @@ export interface Player {
   sport_id: number
   category_id: number
   photo_url: string | null
+  position?: string | null
   status: 'unsold' | 'sold' | 're-auctioned'
   created_at: string
   updated_at: string

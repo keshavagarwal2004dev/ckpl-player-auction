@@ -26,6 +26,7 @@ export default function Admin() {
     sport: 'basketball' as Sport,
     category: 'district' as PlayerCategory,
     photoUrl: '',
+    position: '',
   });
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [editingPlayer, setEditingPlayer] = useState<Player | null>(null);
@@ -58,7 +59,7 @@ export default function Admin() {
       }
 
       await addPlayerMutation.mutateAsync({ ...newPlayer, photoUrl });
-      setNewPlayer({ name: '', sport: 'basketball', category: 'district', photoUrl: '' });
+      setNewPlayer({ name: '', sport: 'basketball', category: 'district', photoUrl: '', position: '' });
       setPhotoFile(null);
       setIsPlayerDialogOpen(false);
       toast.success('Player added successfully!');
@@ -110,6 +111,7 @@ export default function Admin() {
         sport: editingPlayer.sport,
         category: editingPlayer.category,
         photoUrl,
+        position: editingPlayer.position,
       });
       setEditingPlayer(null);
       setPhotoFile(null);
@@ -193,7 +195,16 @@ export default function Admin() {
                       </Select>
                     </div>
                     <div>
-                      <Label>Category</Label>
+                        <Label>Position</Label>
+                        <Input
+                          value={newPlayer.position}
+                          onChange={(e) => setNewPlayer({ ...newPlayer, position: e.target.value })}
+                          placeholder="e.g., Forward, Striker"
+                          className="bg-secondary border-border"
+                        />
+                      </div>
+                      <div>
+                        <Label>Category</Label>
                       <Select
                         value={newPlayer.category}
                         onValueChange={(v) => setNewPlayer({ ...newPlayer, category: v as PlayerCategory })}
@@ -520,6 +531,15 @@ export default function Admin() {
                     value={editingPlayer.name}
                     onChange={(e) => setEditingPlayer({ ...editingPlayer, name: e.target.value })}
                     placeholder="Enter player name"
+                    className="bg-secondary border-border"
+                  />
+                </div>
+                <div>
+                  <Label>Position</Label>
+                  <Input
+                    value={editingPlayer.position || ''}
+                    onChange={(e) => setEditingPlayer({ ...editingPlayer, position: e.target.value })}
+                    placeholder="e.g., Forward, Striker"
                     className="bg-secondary border-border"
                   />
                 </div>

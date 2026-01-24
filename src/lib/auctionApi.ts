@@ -15,6 +15,7 @@ export async function fetchPlayersForStore(): Promise<Player[]> {
     .select(`
       id,
       name,
+      position,
       photo_url,
       status,
       created_at,
@@ -42,6 +43,7 @@ export async function fetchPlayersForStore(): Promise<Player[]> {
       sport,
       category,
       photoUrl: row.photo_url || '',
+        position: row.position || '',
       status,
       soldToTeamId: assignment?.team_id ? String(assignment.team_id) : undefined,
       soldPrice: assignment?.points_spent ?? undefined,
@@ -61,7 +63,7 @@ export async function fetchTeamsForStore(): Promise<Team[]> {
       created_at,
       sports(id,name),
       team_budgets(remaining_points, spent_points),
-      player_assignments(points_spent, player:players(id,name,photo_url,status,category:categories(name)))
+      player_assignments(points_spent, player:players(id,name,position,photo_url,status,category:categories(name)))
     `)
     .order('created_at', { ascending: true })
 
@@ -81,6 +83,7 @@ export async function fetchTeamsForStore(): Promise<Team[]> {
         sport,
         category,
         photoUrl: pa.player?.photo_url || '',
+        position: pa.player?.position || '',
         status: 'auctioned' as const,
         soldToTeamId: String(row.id),
         soldPrice: pa.points_spent ?? 0,
@@ -109,6 +112,7 @@ export async function createPlayer(payload: {
   sport: Sport
   category: PlayerCategory
   photoUrl: string
+  position?: string
 }) {
   const refs = await getReferenceIds()
   const sportId = refs.sports[payload.sport]
@@ -119,6 +123,7 @@ export async function createPlayer(payload: {
     sport_id: sportId,
     category_id: categoryId,
     photo_url: payload.photoUrl,
+    position: payload.position ?? null,
     status: 'unsold',
   })
   if (error) throw error
@@ -131,6 +136,7 @@ export async function updatePlayer(
     sport?: Sport
     category?: PlayerCategory
     photoUrl?: string
+    position?: string
   }
 ) {
   const refs = await getReferenceIds()
@@ -140,6 +146,7 @@ export async function updatePlayer(
   if (payload.sport !== undefined) updates.sport_id = refs.sports[payload.sport]
   if (payload.category !== undefined) updates.category_id = refs.categories[payload.category]
   if (payload.photoUrl !== undefined) updates.photo_url = payload.photoUrl
+  if (payload.position !== undefined) updates.position = payload.position
 
   const { error } = await supabase
     .from('players')
@@ -312,19 +319,20 @@ export async function markPlayerUnsold(playerId: string) {
   // Step 4: Delete the assignment
   await supabase.from('player_assignments').delete().eq('player_id', numericPlayerId)
 
-  // Step 5: Reopen the closed auction for this player so it can be re-auctioned
-  const { error: auctionError } = await supabase
+  // Step 5: Ensure no active auctions remain for this player
+  // Cancel any active auctions to prevent auto-showing in live panel
+  const { error: cancelActiveError } = await supabase
     .from('auctions')
     .update({
-      status: 'active',
-      ended_at: null,
+      status: 'cancelled',
+      ended_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
     })
     .eq('player_id', numericPlayerId)
-    .eq('status', 'closed')
-  
-  if (auctionError) {
-    console.error('Error reopening auction:', auctionError)
-    // Don't throw - continue even if this fails
+    .eq('status', 'active')
+
+  if (cancelActiveError) {
+    console.error('Error cancelling active auction:', cancelActiveError)
   }
 }
 
@@ -480,7 +488,7 @@ export async function fetchAuctionState(options?: { since?: string }): Promise<A
     if (auctionData.player_id) {
       const { data: playerData } = await supabase
         .from('players')
-        .select('id, name, photo_url, sport:sports(name), category:categories(name)')
+        .select('id, name, position, photo_url, sport:sports(name), category:categories(name)')
         .eq('id', auctionData.player_id)
         .single()
 
@@ -492,6 +500,7 @@ export async function fetchAuctionState(options?: { since?: string }): Promise<A
           id: String(playerData.id),
           name: playerData.name,
           photoUrl: playerData.photo_url || '',
+          position: playerData.position || '',
           sport: sportName,
           category: categoryName,
           status: 'available',

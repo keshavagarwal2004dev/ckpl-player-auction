@@ -63,6 +63,11 @@ export function PlayerCard({ player, onSelect, showActions = true, isSelected }:
           <h3 className="font-display text-xs sm:text-sm tracking-wide text-foreground truncate line-clamp-2">
             {player.name.toUpperCase()}
           </h3>
+          {player.position && (
+            <div className="text-[9px] sm:text-[10px] text-muted-foreground truncate">
+              {player.position}
+            </div>
+          )}
           <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-muted-foreground">
             <span>{categoryConfig.startingBid}</span>
             <span>•</span>

@@ -10,6 +10,7 @@ export interface Player {
   sport: Sport;
   category: PlayerCategory;
   photoUrl: string;
+  position?: string;
   status: PlayerStatus;
   soldToTeamId?: string;
   soldPrice?: number;

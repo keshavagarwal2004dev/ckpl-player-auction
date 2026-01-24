@@ -69,6 +69,7 @@ Stores all players with their details.
 | sport_id | BIGINT (FK) | Reference to sports table |
 | category_id | BIGINT (FK) | Reference to categories table |
 | photo_url | TEXT | URL to player photo (required) |
+| position | VARCHAR(50) | Player position (optional) |
 | status | VARCHAR(20) | 'unsold', 'sold', 're-auctioned' |
 | created_at | TIMESTAMP | Creation timestamp |
 | updated_at | TIMESTAMP | Last update timestamp |

@@ -72,11 +72,14 @@ def build_records(rows: List[dict], sport_ids: Dict[str, int], category_ids: Dic
             continue
         seen.add(dedupe_key)
 
+        position = (row.get("Position") or "").strip()
+
         records.append({
             "name": name,
             "sport_id": sport_id,
             "category_id": category_id,
             "photo_url": "",  # photos to be added later
+            "position": position or None,
             "status": "unsold",
         })
     return records

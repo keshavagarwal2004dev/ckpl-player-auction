@@ -400,7 +400,8 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
         currentBidderId: updates.currentBidderId || null,
         currentBidderName: updates.currentBidderName || null,
         bids: Array.isArray(updates.bids) ? updates.bids : [],
-        isActive: !!updates.currentPlayer, // Auto-set isActive based on whether there's an active player
+        // Keep activation manual: do not auto-activate based on DB
+        isActive: state.auctionState.isActive,
       };
       // Persist to localStorage so page refresh doesn't show stale data
       persistAuctionState(nextState);
