@@ -218,7 +218,8 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
     const nextState: AuctionState = {
       isActive: true,
       currentPlayer: player,
-      currentBid: startingBid,
+      // Set to 0 so UI shows base and first bid equals base
+      currentBid: 0,
       currentBidderId: null,
       currentBidderName: null,
       bids: [],
@@ -232,7 +233,7 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
       console.log('🔵 [startAuction] Importing and calling startAuctionInDatabase...')
       import('@/lib/auctionApi').then(({ startAuctionInDatabase }) => {
         console.log('🟢 [startAuction] Successfully imported startAuctionInDatabase, now calling it...')
-        startAuctionInDatabase(player, player.sport, startingBid).then(() => {
+        startAuctionInDatabase(player, player.sport, 0).then(() => {
           console.log('🟢 [startAuction] startAuctionInDatabase completed successfully')
         }).catch(err => {
           console.error('🔴 [startAuction] Failed to sync auction to database:', err)

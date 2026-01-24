@@ -129,8 +129,8 @@ export default function Auction() {
       toast.error('Need at least 2 teams to start auction');
       return;
     }
-    const startingBid = CATEGORY_CONFIG[player.category].startingBid;
-    startAuction(player, startingBid);
+    // Start with 0 to allow first bid to equal the base category starting bid
+    startAuction(player, 0);
     toast.success(`${player.name} is now up for auction!`);
   };
 

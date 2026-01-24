@@ -584,11 +584,10 @@ export async function startAuctionInDatabase(player: Player, sportType: Sport, s
     const refs = await getReferenceIds()
     const sportId = refs.sports[sportType]
 
-    // Close any previous active auctions for this player
+    // Close ANY active auctions to prevent ghosting after refresh
     await supabase
       .from('auctions')
-      .update({ status: 'closed', ended_at: new Date().toISOString() })
-      .eq('player_id', Number(player.id))
+      .update({ status: 'closed', ended_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq('status', 'active')
 
     // Create new auction
@@ -597,7 +596,8 @@ export async function startAuctionInDatabase(player: Player, sportType: Sport, s
       .insert({
         player_id: Number(player.id),
         sport_id: sportId,
-        current_bid: startingBid,
+        // Start at 0 so first bid equals base category starting bid
+        current_bid: 0,
         highest_bidder_team_id: null,
         status: 'active',
       })
