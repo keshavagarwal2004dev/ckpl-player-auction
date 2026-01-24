@@ -81,11 +81,12 @@ export function useRealtimeAuctionState() {
   useEffect(() => {
     if (!auctionStateQuery.data?.changed) return
 
-    const { currentPlayer, currentBid, currentBidderId, currentBidderName, bids } = auctionStateQuery.data
+    const { currentPlayer, currentBid, currentBidderId, currentBidderName, bids, isActive } = auctionStateQuery.data
 
     // Only update store if data actually changed to avoid unnecessary re-renders
     const currentState = auctionStore.auctionState
     if (
+      currentState.isActive !== isActive ||
       currentState.currentPlayer?.id !== currentPlayer?.id ||
       currentState.currentBid !== currentBid ||
       currentState.currentBidderId !== currentBidderId ||
@@ -97,6 +98,7 @@ export function useRealtimeAuctionState() {
         currentBidderId,
         currentBidderName,
         bids,
+        isActive,
       })
     }
   }, [auctionStateQuery.data, auctionStore])

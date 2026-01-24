@@ -87,7 +87,7 @@ interface AuctionStore {
   endAuction: () => void;
   resetAuction: (sport?: Sport) => void;
   setCountdown: (value: number | null | ((prev: number | null) => number | null)) => void;
-  updateAuctionStateFromDatabase: (updates: Pick<AuctionState, 'currentPlayer' | 'currentBid' | 'currentBidderId' | 'currentBidderName' | 'bids'>) => void;
+  updateAuctionStateFromDatabase: (updates: Pick<AuctionState, 'currentPlayer' | 'currentBid' | 'currentBidderId' | 'currentBidderName' | 'bids' | 'isActive'>) => void;
 }
 
 export const useAuctionStore = create<AuctionStore>((set, get) => {
@@ -396,13 +396,9 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
     set((state) => {
       const nextState: AuctionState = {
         ...state.auctionState,
+        ...updates,
         currentPlayer: updates.currentPlayer || null,
-        currentBid: updates.currentBid ?? 0,
-        currentBidderId: updates.currentBidderId || null,
-        currentBidderName: updates.currentBidderName || null,
         bids: Array.isArray(updates.bids) ? updates.bids : [],
-        // Keep activation manual: do not auto-activate based on DB
-        isActive: state.auctionState.isActive,
       };
       // Persist to localStorage so page refresh doesn't show stale data
       persistAuctionState(nextState);
