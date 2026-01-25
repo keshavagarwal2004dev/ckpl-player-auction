@@ -83,6 +83,11 @@ export function LiveAuctionPanel({
                   <Badge variant={player.category as any}>
                     {categoryConfig.label}
                   </Badge>
+                  {player.position && (
+                    <Badge variant="secondary" className="text-xs sm:text-sm font-semibold">
+                      {player.position}
+                    </Badge>
+                  )}
                   <Badge variant="outline" className="text-xs sm:text-sm">
                     Base: {categoryConfig.startingBid} pts
                   </Badge>
@@ -90,11 +95,6 @@ export function LiveAuctionPanel({
                 <h2 className="font-display text-2xl sm:text-3xl md:text-4xl tracking-wide text-foreground line-clamp-2">
                   {player.name.toUpperCase()}
                 </h2>
-                {player.position && (
-                  <div className="text-xs sm:text-sm text-muted-foreground mt-1">
-                    {player.position}
-                  </div>
-                )}
               </div>
 
               {/* Current Bid Display */}
