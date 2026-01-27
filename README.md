@@ -52,12 +52,29 @@ Default Vite port: 5173 (shown in terminal).
 ## Admin
 - Create an admin user in Supabase Auth.
 - Login at `/login`, manage auctions at `/admin`.
+- For demo sharing, create a temporary admin and rotate/delete after review. Do not publish real credentials.
+
+## Demo & visuals
+- Live demo URL: _(add your deployed URL here)_
+- Screens/GIFs (drop files in `docs/diagrams/` and reference):
+	- Data flow: [docs/diagrams/data-flow.png](docs/diagrams/data-flow.png)
+	- DB schema: [docs/diagrams/db-schema.png](docs/diagrams/db-schema.png)
+
+## Architecture
+- Frontend: React + TypeScript + Vite; UI: Tailwind + shadcn/ui.
+- State: Zustand; server sync via Supabase REST calls (polling) + local store persistence.
+- Backend: Supabase (PostgreSQL, Storage, Auth). Storage bucket `player-photos` for player images.
+- Flow (admin/bidder): POST/UPDATE to Supabase → auctions table → React Query detects change → Zustand store updates → components re-render.
+- See diagrams in `docs/diagrams/` for data flow and schema.
 
 ## Useful scripts
 - `npm run dev` – local dev
 - `npm run build` – production build
 - `npm run lint` – lint
 - Tests are not included in this repo (manual QA only).
+
+## Sample data (optional)
+- Import `scripts/sample_teams.csv` then `scripts/sample_players.csv` via Supabase UI or your CSV uploader to get a quick demo set (4 teams, 8 players across basketball/football).
 
 ## Notes
 - Player photos use Supabase Storage bucket `player-photos` (public read, authenticated write).
