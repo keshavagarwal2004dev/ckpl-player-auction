@@ -500,8 +500,8 @@ export async function fetchAuctionState(options?: { since?: string }): Promise<A
         .single()
 
       if (playerData) {
-        const sportName = mapSportName(playerData.sport?.name || '') || 'basketball'
-        const categoryName = mapCategoryName(playerData.category?.name || '') || 'others'
+        const sportName = mapSportName((playerData.sport as any)?.name || '') || 'basketball'
+        const categoryName = mapCategoryName((playerData.category as any)?.name || '') || 'others'
 
         currentPlayer = {
           id: String(playerData.id),
