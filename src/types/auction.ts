@@ -51,7 +51,7 @@ export const CATEGORY_CONFIG: Record<PlayerCategory, { startingBid: number; incr
   state: { startingBid: 120, increment: 15, label: 'State' },
   district: { startingBid: 80, increment: 10, label: 'District' },
   school: { startingBid: 50, increment: 5, label: 'School' },
-  others: { startingBid: 10, increment: 1, label: 'Others' },
+  others: { startingBid: 10, increment: 5, label: 'Others' },
 };
 
 export const SPORT_CONFIG: Record<Sport, { minPlayers: number; defaultTeams: number; label: string; icon: string }> = {
