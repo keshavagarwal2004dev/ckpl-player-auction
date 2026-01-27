@@ -82,6 +82,7 @@ interface AuctionStore {
   setSelectedSport: (sport: Sport | null) => void;
   startAuction: (player: Player, startingBid?: number) => void;
   placeBid: (teamId: string, teamName: string, amount: number) => void;
+  undoLastBid: () => void;
   soldPlayer: (teamId: string, amount: number) => void;
   unsoldPlayer: () => void;
   endAuction: () => void;
@@ -280,6 +281,54 @@ export const useAuctionStore = create<AuctionStore>((set, get) => {
             console.error('Failed to sync bid to database:', err)
           })
         })
+      }
+    }
+  },
+
+  undoLastBid: () => {
+    set((state) => {
+      const { bids } = state.auctionState;
+      
+      // Can't undo if there are no bids
+      if (bids.length === 0) {
+        console.log('⚠️ undoLastBid - No bids to undo');
+        return state;
+      }
+
+      // Remove the last bid
+      const updatedBids = bids.slice(0, -1);
+      
+      // Get the previous bid (now the last one in the array) or reset to 0
+      const previousBid = updatedBids[updatedBids.length - 1];
+      
+      const nextState: AuctionState = {
+        ...state.auctionState,
+        currentBid: previousBid?.amount || 0,
+        currentBidderId: previousBid?.teamId || null,
+        currentBidderName: previousBid?.teamName || null,
+        bids: updatedBids,
+      };
+      
+      console.log('↩️ undoLastBid - Removed last bid:', {
+        removedBid: bids[bids.length - 1],
+        newCurrentBid: nextState.currentBid,
+        newBidder: nextState.currentBidderName,
+        remainingBids: updatedBids.length,
+      });
+      
+      persistAuctionState(nextState);
+      return { auctionState: nextState };
+    });
+    
+    // Sync to database in the background
+    if (typeof window !== 'undefined') {
+      const currentPlayer = get().auctionState.currentPlayer;
+      if (currentPlayer) {
+        import('@/lib/auctionApi').then(({ undoLastBidInDatabase }) => {
+          undoLastBidInDatabase(currentPlayer.id).catch(err => {
+            console.error('Failed to sync undo to database:', err);
+          });
+        });
       }
     }
   },

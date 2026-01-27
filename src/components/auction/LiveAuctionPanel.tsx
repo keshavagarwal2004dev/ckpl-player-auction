@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Player, Team, CATEGORY_CONFIG, AuctionState, SPORT_CONFIG } from "@/types/auction";
-import { Gavel, Timer, TrendingUp, User, Check, X, History } from "lucide-react";
+import { Gavel, Timer, TrendingUp, User, Check, X, History, Undo2 } from "lucide-react";
 
 interface LiveAuctionPanelProps {
   player: Player;
   teams: Team[];
   onBid: (teamId: string, amount: number) => void;
+  onUndo: () => void;
   onSold: (teamId: string, amount: number) => void;
   onUnsold: () => void;
   auctionState: AuctionState;
@@ -18,6 +19,7 @@ export function LiveAuctionPanel({
   player, 
   teams, 
   onBid, 
+  onUndo,
   onSold, 
   onUnsold,
   auctionState 
@@ -151,6 +153,22 @@ export function LiveAuctionPanel({
                   <span className="sm:hidden">Unsold</span>
                 </Button>
               </div>
+
+              {/* Undo Button */}
+              {auctionState.bids.length > 0 && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="w-full gap-2 text-xs sm:text-sm border-warning/30 hover:bg-warning/10"
+                  onClick={onUndo}
+                >
+                  <Undo2 className="h-4 w-4" />
+                  <span>Undo Last Bid</span>
+                  <Badge variant="outline" className="ml-auto text-[10px]">
+                    {auctionState.bids.length} bid{auctionState.bids.length !== 1 ? 's' : ''}
+                  </Badge>
+                </Button>
+              )}
             </div>
           </div>
         </div>

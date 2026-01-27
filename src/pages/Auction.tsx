@@ -29,6 +29,7 @@ export default function Auction() {
     setSelectedSport,
     startAuction,
     placeBid,
+    undoLastBid,
     endAuction,
     setCountdown,
   } = useAuctionStore();
@@ -278,6 +279,7 @@ export default function Auction() {
             teams={sportTeams}
             auctionState={auctionState}
             onBid={handleBid}
+            onUndo={undoLastBid}
             onSold={handleSold}
             onUnsold={handleUnsold}
           />

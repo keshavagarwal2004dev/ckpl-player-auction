@@ -691,6 +691,89 @@ export async function placeBidInDatabase(playerId: string, teamId: string, bidAm
 }
 
 /**
+ * Undo the last bid in the database
+ * Called when admin clicks undo button
+ */
+export async function undoLastBidInDatabase(playerId: string) {
+  try {
+    console.log('🟡 [undoLastBidInDatabase] UNDOING: Removing last bid for player:', playerId)
+
+    // Get the active auction for this player
+    const { data: auctionData, error: auctionError } = await supabase
+      .from('auctions')
+      .select('id')
+      .eq('player_id', Number(playerId))
+      .eq('status', 'active')
+      .single()
+
+    if (auctionError || !auctionData) {
+      console.error('🔴 [undoLastBidInDatabase] No active auction found:', auctionError)
+      throw new Error('No active auction found')
+    }
+
+    const auctionId = auctionData.id
+    console.log('🟡 [undoLastBidInDatabase] Found auction ID:', auctionId)
+
+    // Get all bids for this auction, ordered by creation time
+    const { data: allBids, error: bidsError } = await supabase
+      .from('bids')
+      .select('id, team_id, bid_amount, created_at')
+      .eq('auction_id', auctionId)
+      .order('created_at', { ascending: true })
+
+    if (bidsError) {
+      console.error('🔴 [undoLastBidInDatabase] Error fetching bids:', bidsError)
+      throw bidsError
+    }
+
+    if (!allBids || allBids.length === 0) {
+      console.log('🟡 [undoLastBidInDatabase] No bids to undo')
+      return
+    }
+
+    // Get the last bid (most recent)
+    const lastBid = allBids[allBids.length - 1]
+    console.log('🟡 [undoLastBidInDatabase] Removing bid:', lastBid)
+
+    // Delete the last bid
+    const { error: deleteError } = await supabase
+      .from('bids')
+      .delete()
+      .eq('id', lastBid.id)
+
+    if (deleteError) {
+      console.error('🔴 [undoLastBidInDatabase] Error deleting bid:', deleteError)
+      throw deleteError
+    }
+
+    console.log('🟡 [undoLastBidInDatabase] Bid deleted, now updating auction...')
+
+    // Get the previous bid (if any) to set as current
+    const previousBid = allBids.length > 1 ? allBids[allBids.length - 2] : null
+
+    // Update the auction to reflect the previous bid
+    const { error: auctionUpdateError } = await supabase
+      .from('auctions')
+      .update({
+        current_bid: previousBid?.bid_amount || 0,
+        highest_bidder_team_id: previousBid?.team_id || null,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', auctionId)
+
+    if (auctionUpdateError) {
+      console.error('🔴 [undoLastBidInDatabase] Error updating auction:', auctionUpdateError)
+      throw auctionUpdateError
+    }
+
+    console.log('🟢 [undoLastBidInDatabase] SUCCESS! Last bid removed and auction reverted')
+  } catch (error) {
+    console.error('🔴 [undoLastBidInDatabase] FAILED:', error)
+    throw error
+  }
+}
+
+/**
  * End auction and mark player as sold
  */
 export async function endAuctionInDatabase(playerId: string, teamId: string, finalBid: number) {
