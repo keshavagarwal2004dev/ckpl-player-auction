@@ -79,6 +79,9 @@ export function Footer() {
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Copyright & Credits */}
             <div className="text-center md:text-left space-y-1">
+              <p className="text-xs text-muted-foreground">
+                © 2026 <span className="font-semibold text-foreground">Keshav Agarwal</span>. All rights reserved.
+              </p>
               <p className="text-[10px] text-muted-foreground/70">
                 CHRIST Kengeri Premier League • Department of Physical Education • CHRIST (Deemed to be University)
               </p>
