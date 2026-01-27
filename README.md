@@ -85,3 +85,11 @@ Common issues:
 - Missing env: confirm `.env.local` values
 - DB missing: rerun [supabase/migrations/001_init_schema.sql](supabase/migrations/001_init_schema.sql)
 - Storage access: ensure bucket `player-photos` exists and policies ran with the migration.
+
+---
+
+## License & Copyright
+
+© 2026 Keshav Agarwal. All rights reserved.
+
+This project and its source code are proprietary. Unauthorized copying, modification, distribution, or use of this software, via any medium, is strictly prohibited without explicit written permission from the copyright holder.
