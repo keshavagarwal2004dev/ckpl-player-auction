@@ -33,7 +33,7 @@ INSERT INTO categories (name, starting_points, increment) VALUES
   ('State', 120, 15),
   ('District', 80, 10),
   ('School', 50, 5),
-  ('Others', 10, 1)
+  ('Others', 10, 5)
 ON CONFLICT DO NOTHING;
 
 -- ============================================================================
@@ -59,6 +59,7 @@ CREATE TABLE IF NOT EXISTS players (
   name VARCHAR(100) NOT NULL,
   sport_id BIGINT NOT NULL REFERENCES sports(id) ON DELETE CASCADE,
   category_id BIGINT NOT NULL REFERENCES categories(id) ON DELETE SET NULL,
+  position VARCHAR(50),
   photo_url TEXT,
   status VARCHAR(20) DEFAULT 'unsold' CHECK (status IN ('unsold', 'sold', 're-auctioned')),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -111,7 +112,7 @@ CREATE TABLE IF NOT EXISTS player_assignments (
   id BIGINT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
   player_id BIGINT NOT NULL REFERENCES players(id) ON DELETE CASCADE,
   team_id BIGINT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-  auction_id BIGINT NOT NULL REFERENCES auctions(id) ON DELETE CASCADE,
+  auction_id BIGINT REFERENCES auctions(id) ON DELETE CASCADE,
   points_spent INT NOT NULL,
   assigned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(player_id, team_id)
@@ -194,6 +195,70 @@ ALTER TABLE team_budgets ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auction_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE auction_sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE user_roles ENABLE ROW LEVEL SECURITY;
+
+-- ============================================================================
+-- STORAGE BUCKET & POLICIES
+-- ============================================================================
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('player-photos', 'player-photos', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- Public read for player photos
+CREATE POLICY "Public read player photos" ON storage.objects
+  FOR SELECT USING (bucket_id = 'player-photos');
+
+-- Authenticated upload/update/delete for player photos
+CREATE POLICY "Authenticated write player photos" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'player-photos');
+CREATE POLICY "Authenticated update player photos" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'player-photos') WITH CHECK (bucket_id = 'player-photos');
+CREATE POLICY "Authenticated delete player photos" ON storage.objects
+  FOR DELETE USING (bucket_id = 'player-photos');
+
+-- Open policies for core tables (adjust later for stricter roles)
+DO $$
+BEGIN
+  -- sports & categories: read-only
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'sports' AND policyname = 'sports_select_all'
+  ) THEN
+    CREATE POLICY sports_select_all ON sports FOR SELECT USING (true);
+  END IF;
+
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'categories' AND policyname = 'categories_select_all'
+  ) THEN
+    CREATE POLICY categories_select_all ON categories FOR SELECT USING (true);
+  END IF;
+
+  -- players
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'players' AND policyname = 'players_all'
+  ) THEN
+    CREATE POLICY players_all ON players FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- teams
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'teams' AND policyname = 'teams_all'
+  ) THEN
+    CREATE POLICY teams_all ON teams FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- team_budgets
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'team_budgets' AND policyname = 'team_budgets_all'
+  ) THEN
+    CREATE POLICY team_budgets_all ON team_budgets FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+
+  -- player_assignments
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies WHERE tablename = 'player_assignments' AND policyname = 'player_assignments_all'
+  ) THEN
+    CREATE POLICY player_assignments_all ON player_assignments FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+END$$;
 
 -- ============================================================================
 -- CREATE HELPFUL VIEWS
